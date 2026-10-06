@@ -1,0 +1,1 @@
+GSR-REQ-004: The relay shall drop from the buffer any frame older than 300 seconds, and shall log each dropped frame with its sequence number.

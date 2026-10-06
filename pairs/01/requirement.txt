@@ -1,0 +1,1 @@
+GSR-REQ-001: The relay shall reject any telemetry frame whose CRC-16 trailer does not match the frame payload, and shall not forward a rejected frame.

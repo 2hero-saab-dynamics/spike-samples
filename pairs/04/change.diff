@@ -1,0 +1,38 @@
+diff --git a/relay/downstream.py b/relay/downstream.py
+index a81f3c2..d04e97b 100644
+--- a/relay/downstream.py
++++ b/relay/downstream.py
+@@ -1,22 +1,31 @@
+ import socket
+ import time
+ 
+ from relay.log import log
+ 
+-RETRY_SECONDS = 5
++INITIAL_BACKOFF = 0.5
++MAX_BACKOFF = 30.0
++MAX_FRAMES_PER_SECOND = 500  # see GSR-REQ-008
+ 
+ 
+ class Downstream:
+     def __init__(self, host: str, port: int):
+         self.addr = (host, port)
+         self.sock: socket.socket | None = None
++        self.backoff = INITIAL_BACKOFF
+ 
+     def connect(self) -> None:
+         while self.sock is None:
+             try:
+                 self.sock = socket.create_connection(self.addr, timeout=3)
++                self.backoff = INITIAL_BACKOFF
+                 log.info("downstream: connected to %s:%d", *self.addr)
+             except OSError as e:
+-                log.warning("downstream: %s, retrying in %ds", e, RETRY_SECONDS)
+-                time.sleep(RETRY_SECONDS)
++                log.warning("downstream: %s, retrying in %.1fs", e, self.backoff)
++                time.sleep(self.backoff)
++                self.backoff = min(self.backoff * 2, MAX_BACKOFF)
+ 
+     def send(self, frame: bytes) -> None:
+         assert self.sock is not None
+         self.sock.sendall(frame)

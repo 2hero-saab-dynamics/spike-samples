@@ -1,0 +1,35 @@
+diff --git a/relay/frame.py b/relay/frame.py
+index 3f1c2a9..b7e04d1 100644
+--- a/relay/frame.py
++++ b/relay/frame.py
+@@ -1,6 +1,8 @@
+ import struct
+ 
++from relay.crc import crc16_ccitt
+ from relay.errors import FrameError
++from relay.metrics import counter
+ 
+ HEADER = struct.Struct(">HIB")  # sync, sequence, length
+ 
+@@ -12,10 +14,19 @@ def parse(raw: bytes) -> Frame:
+     if sync != 0xEB90:
+         raise FrameError("bad sync word")
+     payload = raw[HEADER.size : HEADER.size + length]
+     if len(payload) != length:
+         raise FrameError("short payload")
+-    return Frame(seq=seq, payload=payload)
++    trailer = raw[HEADER.size + length : HEADER.size + length + 2]
++    if len(trailer) != 2:
++        raise FrameError("missing CRC trailer")
++    (received_crc,) = struct.unpack(">H", trailer)
++    if crc16_ccitt(payload) != received_crc:
++        counter("frames_rejected_crc").inc()
++        raise FrameError(f"CRC mismatch on seq {seq}")
++    return Frame(seq=seq, payload=payload)
+ 
+ 
+ def parse_or_none(raw: bytes) -> Frame | None:
++    """Used by the receive loop; a None is never queued for forwarding."""
+     try:
+         return parse(raw)
+     except FrameError:

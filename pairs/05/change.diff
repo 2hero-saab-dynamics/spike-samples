@@ -1,0 +1,35 @@
+diff --git a/relay/buffer.py b/relay/buffer.py
+index 5e2b9d7..f3a1c08 100644
+--- a/relay/buffer.py
++++ b/relay/buffer.py
+@@ -1,9 +1,11 @@
+ from collections import deque
++import time
+ 
+ from relay.frame import Frame
+ from relay.log import log
+ 
+ CAPACITY = 10_000
++MAX_AGE_SECONDS = 300
+ 
+ 
+ class FrameBuffer:
+@@ -16,6 +18,20 @@ class FrameBuffer:
+             log.warning("buffer full, dropping oldest frame")
+         self.frames.append(frame)
+ 
++    def expire(self, now: float | None = None) -> int:
++        """Drop frames older than MAX_AGE_SECONDS. Returns the number dropped."""
++        now = time.time() if now is None else now
++        dropped = 0
++        while self.frames and now - self.frames[0].received_at > MAX_AGE_SECONDS:
++            self.frames.popleft()
++            dropped += 1
++        if dropped:
++            log.info("buffer: expired %d frame(s) older than %ds", dropped, MAX_AGE_SECONDS)
++        return dropped
++
+     def drain(self):
++        self.expire()
+         while self.frames:
+             yield self.frames.popleft()

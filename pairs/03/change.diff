@@ -1,0 +1,39 @@
+diff --git a/src/receiver.c b/src/receiver.c
+index 71b0e3d..5d9f2a4 100644
+--- a/src/receiver.c
++++ b/src/receiver.c
+@@ -1,3 +1,4 @@
+ #include <stdint.h>
++#include <time.h>
+ #include <unistd.h>
+ #include "frame.h"
+@@ -9,16 +10,28 @@
+ #define MAX_RAW 4096
+ 
++static uint64_t now_utc_ms(void)
++{
++    struct timespec ts;
++
++    clock_gettime(CLOCK_REALTIME, &ts);
++    return (uint64_t)ts.tv_sec * 1000u + (uint64_t)ts.tv_nsec / 1000000u;
++}
++
+ void receiver_loop(int fd, struct frame_queue *q)
+ {
+     uint8_t raw[MAX_RAW];
+     ssize_t n;
++    uint64_t received_at;
+     struct frame f;
+ 
+     for (;;) {
+         n = read(fd, raw, sizeof raw);
+         if (n <= 0)
+             continue;
+-        if (frame_parse(raw, (size_t)n, &f) == 0)
++        received_at = now_utc_ms();
++        if (frame_parse(raw, (size_t)n, &f) == 0) {
++            f.received_at_ms = received_at;
+             frame_queue_push(q, &f);
++        }
+     }
+ }

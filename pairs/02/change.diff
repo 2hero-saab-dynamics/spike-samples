@@ -1,0 +1,39 @@
+diff --git a/src/config.c b/src/config.c
+index 9a4e7f0..c21d6b8 100644
+--- a/src/config.c
++++ b/src/config.c
+@@ -3,6 +3,7 @@
+ #include <stdlib.h>
+ #include <string.h>
+ #include <errno.h>
++#include <sys/stat.h>
+ 
+ #include "config.h"
+ #include "log.h"
+@@ -41,11 +42,26 @@ static int parse_file(FILE *fp, struct relay_config *cfg)
+     return 0;
+ }
+ 
++static int signature_present(const char *path)
++{
++    char sigpath[PATH_MAX];
++    struct stat st;
++
++    snprintf(sigpath, sizeof sigpath, "%s.sig", path);
++    if (stat(sigpath, &st) != 0) {
++        log_error("config: no signature file %s: %s", sigpath, strerror(errno));
++        return 0;
++    }
++    return 1;
++}
++
+ int config_load(const char *path, struct relay_config *cfg)
+ {
+     FILE *fp;
+     int rc;
+ 
++    if (!signature_present(path))
++        return CONFIG_ERR_UNSIGNED;
+     fp = fopen(path, "r");
+     if (fp == NULL) {
+         log_error("config: cannot open %s: %s", path, strerror(errno));

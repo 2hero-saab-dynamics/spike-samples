@@ -1,0 +1,11 @@
+[
+  {"requirement": "GSR-REQ-001", "test": "test_frame_rejected_on_bad_crc", "status": "passed"},
+  {"requirement": "GSR-REQ-002", "test": "test_reception_timestamp_is_utc_ms", "status": "passed"},
+  {"requirement": "GSR-REQ-003", "test": "test_buffer_forwards_in_order_after_outage", "status": "passed"},
+  {"requirement": "GSR-REQ-003", "test": "test_health_reports_buffer_and_link", "status": "passed"},
+  {"requirement": "GSR-REQ-004", "test": "test_stale_frames_dropped_and_logged_by_seq", "status": "passed"},
+  {"requirement": "GSR-REQ-005", "test": null, "status": "missing"},
+  {"requirement": "GSR-REQ-006", "test": "test_health_reports_buffer_and_link", "status": "passed"},
+  {"requirement": "GSR-REQ-007", "test": null, "status": "missing"},
+  {"requirement": "GSR-REQ-008", "test": "test_forward_rate_capped_at_500_per_s", "status": "failed"}
+]

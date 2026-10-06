@@ -1,0 +1,1 @@
+GSR-REQ-002: The relay shall stamp each received frame with the UTC time of reception, to millisecond resolution, before any other processing.

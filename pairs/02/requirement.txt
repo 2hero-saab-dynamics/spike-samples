@@ -1,0 +1,1 @@
+GSR-REQ-005: The relay shall load its configuration only if the configuration file carries a valid signature from the operator's key; otherwise it shall refuse to start.

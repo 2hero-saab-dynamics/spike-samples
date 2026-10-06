@@ -1,0 +1,1 @@
+GSR-REQ-008: The relay shall forward at most 500 frames per second to the downstream link and shall queue, not drop, any excess.
